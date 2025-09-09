@@ -67,12 +67,12 @@ export function AuthForm({ mode }: AuthFormProps) {
         title: isLogin ? 'Login Successful' : 'Signup Successful',
         description: isLogin ? 'Welcome back!' : 'Please check your email to verify your account.',
       });
+      router.refresh();
       if (isLogin) {
-        router.push('/dashboard');
-      } else {
-        router.refresh();
+        // The middleware will handle redirection to /dashboard
       }
     }
+    // Don't set submitting to false on success, as the page will refresh.
   }
 
   return (
