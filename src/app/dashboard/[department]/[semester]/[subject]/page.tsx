@@ -31,6 +31,10 @@ async function getSubjectId(departmentSlug: string, semesterSlug: string, subjec
             .single();
 
         if (deptError) throw deptError;
+        if (!deptData) {
+            console.error(`Department not found for slug: ${departmentSlug}`);
+            return null;
+        }
 
         const { data: semData, error: semError } = await supabase
             .from('semesters')
@@ -39,6 +43,10 @@ async function getSubjectId(departmentSlug: string, semesterSlug: string, subjec
             .single();
 
         if (semError) throw semError;
+        if (!semData) {
+            console.error(`Semester not found for slug: ${semesterSlug}`);
+            return null;
+        }
 
         const { data: subjectData, error: subjectError } = await supabase
             .from('subjects')
@@ -50,7 +58,7 @@ async function getSubjectId(departmentSlug: string, semesterSlug: string, subjec
 
         if (subjectError) throw subjectError;
 
-        return subjectData.id;
+        return subjectData?.id ?? null;
 
     } catch (error) {
         console.error('Error fetching subject ID:', error);
