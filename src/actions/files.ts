@@ -31,31 +31,60 @@ export async function uploadFile(formData: FormData) {
   }
 
   const fullPath = `${filePath}/${file.name}`;
+  
+  console.log('Starting file upload process for:', fullPath);
+
+  // Check if file already exists
+  const { data: existingFileData, error: listError } = await supabase.storage.from('study200').list(filePath, {
+    search: file.name,
+    limit: 1,
+  });
+
+  if (listError) {
+      console.error('Error checking for existing file:', listError);
+      // We don't return here, as it might be a permissions issue that doesn't prevent an upload.
+  }
+
+  if (existingFileData && existingFileData.length > 0) {
+      console.log('File already exists at path:', fullPath);
+      return { error: 'A file with this name already exists. Please rename the file and try again.' };
+  }
 
   const { error: uploadError } = await supabase.storage.from('study200').upload(fullPath, file);
 
   if (uploadError) {
-    console.error('Upload Error:', uploadError);
+    console.error('Storage Upload Error:', uploadError);
     return { error: `Failed to upload file to storage: ${uploadError.message}` };
   }
+  
+  console.log('File successfully uploaded to storage.');
 
   const {
     data: { publicUrl },
   } = supabase.storage.from('study200').getPublicUrl(fullPath);
+  
+  console.log('Got public URL:', publicUrl);
+  console.log('Attempting to insert into database with payload:', {
+      subject_id: parseInt(subjectId),
+      file_url: publicUrl,
+      file_name: file.name,
+      file_path: fullPath,
+  });
 
+  // By selecting data, we force Supabase to re-evaluate the schema for the 'files' table.
   const { error: dbError } = await supabase.from('files').insert({
     subject_id: parseInt(subjectId),
     file_url: publicUrl,
     file_name: file.name,
     file_path: fullPath,
-  });
+  }).select('id').single();
 
   if (dbError) {
-    console.error('Database Error:', dbError);
-    // The attempt to clean up storage on DB insert failure is removed
-    // because anonymous users do not have delete permissions.
+    console.error('Database Insert Error:', dbError);
     return { error: `Failed to save file metadata: ${dbError.message}` };
   }
+  
+  console.log('Successfully inserted file metadata into database.');
 
   revalidatePath(`/dashboard/${filePath}`);
   return { error: null };
