@@ -38,7 +38,10 @@ export default function SemesterPage({ params }: Props) {
   return (
     <>
       <Breadcrumbs items={breadcrumbItems} />
-      <h1 className="text-3xl font-bold mb-6">Select a Subject</h1>
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold tracking-tight">Select a Subject</h1>
+        <p className="text-muted-foreground mt-1">Choose a subject to view its files.</p>
+      </div>
       {subjects.length > 0 ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           {subjects.map((sub) => (
@@ -47,10 +50,12 @@ export default function SemesterPage({ params }: Props) {
               key={sub.slug}
               className="group"
             >
-              <Card className="h-full transition-all duration-300 ease-in-out hover:shadow-lg hover:-translate-y-1 hover:border-primary">
-                <CardHeader className="flex flex-row items-center gap-4">
-                  <BookMarked className="w-8 h-8 text-primary" />
-                  <CardTitle className="text-lg">{sub.name}</CardTitle>
+              <Card className="h-full transition-all duration-300 ease-in-out hover:shadow-lg hover:-translate-y-1.5 hover:shadow-primary/20 border-2 border-transparent hover:border-primary/50">
+                <CardHeader className="flex flex-row items-center gap-4 p-6">
+                  <div className="bg-primary/10 p-3 rounded-full">
+                    <BookMarked className="w-6 h-6 text-primary" />
+                  </div>
+                  <CardTitle className="text-lg font-semibold">{sub.name}</CardTitle>
                 </CardHeader>
               </Card>
             </Link>
