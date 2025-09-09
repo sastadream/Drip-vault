@@ -12,7 +12,7 @@ export async function Header() {
               <span className="font-bold text-xl tracking-tight">EduVault</span>
             </Link>
             <div className="border-l pl-4">
-                <p className="text-sm font-medium text-muted-foreground">Designed & Developed by Samir Desai</p>
+                <p className="text-sm font-semibold text-foreground/90">Designed & Developed by Samir Desai</p>
             </div>
           </div>
         </div>
