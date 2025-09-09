@@ -8,7 +8,7 @@ import { DashboardFileUploader } from '@/components/DashboardFileUploader';
 import { Separator } from '@/components/ui/separator';
 
 export const metadata: Metadata = {
-  title: 'Dashboard | EduVault',
+  title: 'Dashboard | RizzVault',
 };
 
 export default function DashboardPage() {
@@ -17,7 +17,7 @@ export default function DashboardPage() {
       <Breadcrumbs items={[{ label: 'Dashboard' }]} />
       <div className="space-y-8">
         <div className="space-y-2">
-            <h1 className="text-3xl font-bold tracking-tight">Welcome to EduVault</h1>
+            <h1 className="text-3xl font-bold tracking-tight">Welcome to RizzVault</h1>
             <p className="text-muted-foreground">Your centralized hub for academic materials.</p>
         </div>
 

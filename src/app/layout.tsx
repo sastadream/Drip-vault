@@ -7,8 +7,8 @@ const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
 
 export const metadata: Metadata = {
   title: {
-    template: '%s | EduVault',
-    default: 'EduVault - Your Academic File Repository',
+    template: '%s | RizzVault',
+    default: 'RizzVault - Your Academic File Repository',
   },
   description: 'A modern solution for organizing and sharing academic materials.',
 };
