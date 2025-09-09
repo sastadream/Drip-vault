@@ -61,10 +61,6 @@ export function DashboardFileUploader() {
     () => (department && semester ? SUBJECTS[department]?.[semester] || [] : []),
     [department, semester]
   );
-  
-  const subjectDetails = useMemo(() => {
-    return availableSubjects.find(s => s.slug === subject);
-  }, [subject, availableSubjects]);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = e.target.files?.[0] || null;
@@ -74,20 +70,42 @@ export function DashboardFileUploader() {
       if (selectedFile.size > MAX_FILE_SIZE) {
         setError('File is too large. Maximum size is 20MB.');
         setFile(null);
+        setFileName('');
         return;
       }
       if (!ALLOWED_FILE_TYPES.includes(selectedFile.type)) {
         setError('Invalid file type. Only PDF, DOCX, PPTX, PNG, and JPG are allowed.');
         setFile(null);
+        setFileName('');
         return;
       }
       setFileName(selectedFile.name);
+    } else {
+        setFileName('');
     }
     setFile(selectedFile);
   };
   
   const handleAction = async (formData: FormData) => {
-    // We need to add fields manually because we are using controlled components.
+    const customFileName = formData.get('fileName') as string;
+    const originalFile = formData.get('file') as File;
+
+    if (!customFileName) {
+         toast({
+            variant: 'destructive',
+            title: 'File name is required.',
+        });
+        return;
+    }
+    
+    if (!originalFile || originalFile.size === 0) {
+        toast({
+            variant: 'destructive',
+            title: 'File is required.',
+        });
+        return;
+    }
+
     const subjectId = (department === 'robotic-and-automation-engineering' && semester === 'sem-1' && subject === 'design-thinking') ? '1' : null;
     
     if (!subjectId) {
@@ -101,27 +119,15 @@ export function DashboardFileUploader() {
 
     const filePath = `${department}/${semester}/${subject}`;
     
-    formData.append('subjectId', subjectId);
-    formData.append('filePath', filePath);
-    
-    // The user-provided file name is compulsory.
-    const customFileName = formData.get('fileName') as string;
-    if (!customFileName) {
-         toast({
-            variant: 'destructive',
-            title: 'File name is required.',
-        });
-        return;
-    }
-
     // We need to recreate the file object with the new name
-    if (file) {
-        const newFile = new File([file], customFileName, { type: file.type });
-        formData.set('file', newFile);
-    }
+    const newFile = new File([originalFile], customFileName, { type: originalFile.type });
+    
+    const newFormData = new FormData();
+    newFormData.append('subjectId', subjectId);
+    newFormData.append('filePath', filePath);
+    newFormData.append('file', newFile);
 
-
-    const result = await uploadFile(formData);
+    const result = await uploadFile(newFormData);
 
     if (result.error) {
       toast({
@@ -147,9 +153,9 @@ export function DashboardFileUploader() {
     <form ref={formRef} action={handleAction} className="space-y-6">
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div className="space-y-2">
-          <Label htmlFor="department">Department</Label>
+          <Label htmlFor="department-dashboard">Department</Label>
           <Select name="department" value={department} onValueChange={setDepartment}>
-            <SelectTrigger id="department">
+            <SelectTrigger id="department-dashboard">
               <SelectValue placeholder="Select Department" />
             </SelectTrigger>
             <SelectContent>
@@ -162,9 +168,9 @@ export function DashboardFileUploader() {
           </Select>
         </div>
         <div className="space-y-2">
-          <Label htmlFor="semester">Semester</Label>
+          <Label htmlFor="semester-dashboard">Semester</Label>
           <Select name="semester" value={semester} onValueChange={setSemester} disabled={!department}>
-            <SelectTrigger id="semester">
+            <SelectTrigger id="semester-dashboard">
               <SelectValue placeholder="Select Semester" />
             </SelectTrigger>
             <SelectContent>
@@ -177,9 +183,9 @@ export function DashboardFileUploader() {
           </Select>
         </div>
         <div className="space-y-2">
-          <Label htmlFor="subject">Subject</Label>
+          <Label htmlFor="subject-dashboard">Subject</Label>
           <Select name="subject" value={subject} onValueChange={setSubject} disabled={!semester}>
-            <SelectTrigger id="subject">
+            <SelectTrigger id="subject-dashboard">
               <SelectValue placeholder="Select Subject" />
             </SelectTrigger>
             <SelectContent>
@@ -195,9 +201,9 @@ export function DashboardFileUploader() {
       
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="space-y-2">
-            <Label htmlFor="file">Select File</Label>
+            <Label htmlFor="file-dashboard">Select File</Label>
             <Input
-            id="file"
+            id="file-dashboard"
             name="file"
             type="file"
             onChange={handleFileChange}
@@ -206,9 +212,9 @@ export function DashboardFileUploader() {
             />
         </div>
         <div className="space-y-2">
-            <Label htmlFor="fileName">File Name (Required)</Label>
+            <Label htmlFor="fileName-dashboard">File Name (Required)</Label>
             <Input
-            id="fileName"
+            id="fileName-dashboard"
             name="fileName"
             type="text"
             value={fileName}

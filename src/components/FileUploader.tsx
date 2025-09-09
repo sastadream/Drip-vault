@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { useFormStatus } from 'react-dom';
 import { uploadFile } from '@/actions/files';
 import { Button } from './ui/button';
@@ -8,7 +8,6 @@ import { Input } from './ui/input';
 import { Label } from './ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2, Upload } from 'lucide-react';
-import { Card, CardContent } from './ui/card';
 
 const MAX_FILE_SIZE = 20 * 1024 * 1024; // 20MB
 const ALLOWED_FILE_TYPES = [
@@ -39,10 +38,9 @@ function SubmitButton() {
 }
 
 export function FileUploader({ subjectId, filePath }: { subjectId: number; filePath: string }) {
-  const [file, setFile] = useState<File | null>(null);
   const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
-  const formRef = React.useRef<HTMLFormElement>(null);
+  const formRef = useRef<HTMLFormElement>(null);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = e.target.files?.[0] || null;
@@ -51,21 +49,23 @@ export function FileUploader({ subjectId, filePath }: { subjectId: number; fileP
     if (selectedFile) {
       if (selectedFile.size > MAX_FILE_SIZE) {
         setError('File is too large. Maximum size is 20MB.');
-        setFile(null);
+        e.target.value = ''; // Clear the input
         return;
       }
       if (!ALLOWED_FILE_TYPES.includes(selectedFile.type)) {
         setError(
           'Invalid file type. Only PDF, DOCX, PPTX, PNG, and JPG are allowed.'
         );
-        setFile(null);
+        e.target.value = ''; // Clear the input
         return;
       }
     }
-    setFile(selectedFile);
   };
 
   const handleAction = async (formData: FormData) => {
+    formData.append('subjectId', String(subjectId));
+    formData.append('filePath', filePath);
+    
     const result = await uploadFile(formData);
 
     if (result.error) {
@@ -80,33 +80,22 @@ export function FileUploader({ subjectId, filePath }: { subjectId: number; fileP
         description: 'Your file has been uploaded.',
       });
       formRef.current?.reset();
-      setFile(null);
     }
   };
 
   return (
     <form ref={formRef} action={handleAction} className="space-y-4">
-      <input type="hidden" name="subjectId" value={subjectId} />
-      <input type="hidden" name="filePath" value={filePath} />
       <div className="space-y-2">
-        <Label htmlFor="file">Select File</Label>
+        <Label htmlFor="file-subject">Select File</Label>
         <Input
-          id="file"
+          id="file-subject"
           name="file"
           type="file"
           onChange={handleFileChange}
           required
           className="file:text-primary file:font-semibold"
         />
-        {file && (
-            <Card className="mt-4">
-                <CardContent className="pt-4 text-sm">
-                    <p><strong>Selected:</strong> {file.name}</p>
-                    <p className="text-muted-foreground"><strong>Size:</strong> {(file.size / 1024 / 1024).toFixed(2)} MB</p>
-                </CardContent>
-            </Card>
-        )}
-        {error && <p className="text-sm font-medium text-destructive">{error}</p>}
+        {error && <p className="text-sm font-medium text-destructive mt-2">{error}</p>}
       </div>
       <SubmitButton />
     </form>
