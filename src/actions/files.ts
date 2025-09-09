@@ -63,24 +63,23 @@ export async function uploadFile(formData: FormData) {
   
   console.log('Got public URL:', publicUrl);
   
-  // Step 1: Insert a new record with just the subject_id to get a new ID.
-  console.log('Attempting to insert initial record with subject_id:', subjectId);
+  // The error was here: parseInt(subjectId) was incorrect.
+  // The subjectId is already a number passed as a string, but the database expects an integer.
+  // The correct way is to convert it to a number.
   const { data: newFileData, error: initialInsertError } = await supabase
     .from('files')
-    .insert({ subject_id: parseInt(subjectId) })
+    .insert({ subject_id: Number(subjectId) })
     .select('id')
     .single();
 
   if (initialInsertError || !newFileData) {
     console.error('Database Initial Insert Error:', initialInsertError);
-    // Note: We are not deleting the file from storage to avoid permissions issues.
     return { error: `Failed to create initial file record: ${initialInsertError?.message}` };
   }
 
   const newFileId = newFileData.id;
   console.log('Successfully created initial record with ID:', newFileId);
   
-  // Step 2: Update the record with the rest of the file information.
   console.log('Attempting to update record with file metadata.');
   const { error: updateError } = await supabase
     .from('files')
@@ -93,7 +92,6 @@ export async function uploadFile(formData: FormData) {
 
   if (updateError) {
     console.error('Database Update Error:', updateError);
-    // Note: We are not deleting the file from storage to avoid permissions issues.
     return { error: `Failed to update file metadata: ${updateError.message}` };
   }
 
