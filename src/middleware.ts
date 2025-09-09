@@ -1,3 +1,4 @@
+
 import { createServerClient, type CookieOptions } from '@supabase/ssr';
 import { NextResponse, type NextRequest } from 'next/server';
 
@@ -60,7 +61,22 @@ export async function middleware(request: NextRequest) {
 
   const { pathname } = request.nextUrl;
 
-  const isAuthPage = pathname === '/login' || pathname === '/signup';
+  // Allow access to update-password page only when there's a recovery token
+  if (pathname === '/update-password') {
+    const code = request.nextUrl.searchParams.get('code');
+    // A simple check for the presence of a recovery token in the URL.
+    // Supabase sends a recovery token that gets exchanged for a session.
+    // If the user has a session, they can update their password.
+    if (!session) {
+      // If there is no session and no code, redirect to login
+      if(!request.headers.get('referer')?.includes('password-reset')) {
+         return NextResponse.redirect(new URL('/login?error=Invalid or expired password reset link.', request.url));
+      }
+    }
+    return response;
+  }
+  
+  const isAuthPage = pathname === '/login' || pathname === '/signup' || pathname === '/forgot-password';
 
   if (!session && !isAuthPage) {
     return NextResponse.redirect(new URL('/login', request.url));
@@ -74,5 +90,6 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/dashboard/:path*', '/login', '/signup'],
+  matcher: ['/dashboard/:path*', '/login', '/signup', '/forgot-password', '/update-password'],
 };
+

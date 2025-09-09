@@ -4,19 +4,18 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import * as z from 'zod';
-import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { useState } from 'react';
+import { Loader2 } from 'lucide-react';
+import Link from 'next/link';
 
 import { Button } from '@/components/ui/button';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
-import { login, signup } from '@/actions/auth';
-import { useState } from 'react';
-import { Loader2 } from 'lucide-react';
+import { updateUserPassword } from '@/actions/auth';
 
-const signupSchema = z.object({
-  email: z.string().email({ message: 'Please enter a valid email.' }),
+const updatePasswordSchema = z.object({
   password: z
     .string()
     .min(8, { message: 'Password must be at least 8 characters long.' })
@@ -24,51 +23,42 @@ const signupSchema = z.object({
     .regex(/[a-z]/, { message: 'Password must contain at least one lowercase letter.' })
     .regex(/[0-9]/, { message: 'Password must contain at least one number.' })
     .regex(/[^A-Za-z0-9]/, { message: 'Password must contain at least one symbol.' }),
+  confirmPassword: z.string()
+}).refine((data) => data.password === data.confirmPassword, {
+    message: "Passwords don't match",
+    path: ["confirmPassword"],
 });
 
-const loginSchema = z.object({
-  email: z.string().email({ message: 'Please enter a valid email.' }),
-  password: z.string().min(1, { message: 'Password is required.' }),
-});
-
-type AuthFormProps = {
-  mode: 'login' | 'signup';
-};
-
-export function AuthForm({ mode }: AuthFormProps) {
+export function UpdatePasswordForm() {
   const router = useRouter();
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const isLogin = mode === 'login';
-  const schema = isLogin ? loginSchema : signupSchema;
-
-  const form = useForm<z.infer<typeof schema>>({
-    resolver: zodResolver(schema),
+  const form = useForm<z.infer<typeof updatePasswordSchema>>({
+    resolver: zodResolver(updatePasswordSchema),
     defaultValues: {
-      email: '',
       password: '',
+      confirmPassword: '',
     },
   });
 
-  async function onSubmit(values: z.infer<typeof schema>) {
+  async function onSubmit(values: z.infer<typeof updatePasswordSchema>) {
     setIsSubmitting(true);
-    const action = isLogin ? login : signup;
-    const result = await action(values);
+    const result = await updateUserPassword(values.password);
 
     if (result.error) {
       toast({
         variant: 'destructive',
-        title: 'Authentication Failed',
+        title: 'Error',
         description: result.error,
       });
       setIsSubmitting(false);
     } else {
-      toast({
-        title: isLogin ? 'Login Successful' : 'Signup Successful',
-        description: isLogin ? 'Welcome back!' : 'Please check your email to verify your account.',
-      });
-      router.refresh();
+        toast({
+            title: "Success!",
+            description: "Your password has been updated successfully."
+        })
+      router.push('/login');
     }
   }
 
@@ -77,12 +67,12 @@ export function AuthForm({ mode }: AuthFormProps) {
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
         <FormField
           control={form.control}
-          name="email"
+          name="password"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Email</FormLabel>
+              <FormLabel>New Password</FormLabel>
               <FormControl>
-                <Input placeholder="name@example.com" {...field} />
+                <Input type="password" placeholder="••••••••" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -90,20 +80,10 @@ export function AuthForm({ mode }: AuthFormProps) {
         />
         <FormField
           control={form.control}
-          name="password"
+          name="confirmPassword"
           render={({ field }) => (
             <FormItem>
-                <div className="flex items-center justify-between">
-                    <FormLabel>Password</FormLabel>
-                    {isLogin && (
-                        <Link href="/forgot-password"
-                            className="text-sm font-medium text-primary hover:underline"
-                            tabIndex={-1}
-                        >
-                            Forgot password?
-                        </Link>
-                    )}
-                </div>
+              <FormLabel>Confirm New Password</FormLabel>
               <FormControl>
                 <Input type="password" placeholder="••••••••" {...field} />
               </FormControl>
@@ -113,16 +93,9 @@ export function AuthForm({ mode }: AuthFormProps) {
         />
         <Button type="submit" className="w-full" disabled={isSubmitting}>
           {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-          {isLogin ? 'Log In' : 'Sign Up'}
+          Update Password
         </Button>
       </form>
-      <p className="mt-6 text-center text-sm text-muted-foreground">
-        {isLogin ? "Don't have an account? " : 'Already have an account? '}
-        <Link href={isLogin ? '/signup' : '/login'} className="font-semibold text-primary hover:underline">
-          {isLogin ? 'Sign up' : 'Log in'}
-        </Link>
-      </p>
     </Form>
   );
 }
-

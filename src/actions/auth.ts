@@ -1,3 +1,4 @@
+
 'use server';
 
 import { createClient } from '@/lib/supabase/server';
@@ -51,4 +52,24 @@ export async function logout() {
   const supabase = createClient();
   await supabase.auth.signOut();
   redirect('/login');
+}
+
+export async function requestPasswordReset(email: string) {
+    const supabase = createClient();
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL}/update-password`,
+    });
+    if (error) {
+        return { error: error.message };
+    }
+    return { error: null };
+}
+
+export async function updateUserPassword(password: string) {
+    const supabase = createClient();
+    const { error } = await supabase.auth.updateUser({ password });
+    if (error) {
+        return { error: 'Could not update password. The link may have expired.' };
+    }
+    return { error: null };
 }

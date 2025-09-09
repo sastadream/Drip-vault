@@ -1,3 +1,4 @@
+
 import { cookies } from 'next/headers';
 import { NextResponse } from 'next/server';
 import { type CookieOptions, createServerClient } from '@supabase/ssr';
@@ -10,6 +11,7 @@ export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url);
   const code = searchParams.get('code');
   const next = searchParams.get('next') ?? '/dashboard';
+  const type = searchParams.get('type');
 
   if (code) {
     const cookieStore = cookies();
@@ -28,6 +30,9 @@ export async function GET(request: Request) {
     });
     const { error } = await supabase.auth.exchangeCodeForSession(code);
     if (!error) {
+        if(type === 'recovery') {
+            return NextResponse.redirect(`${origin}/update-password`);
+        }
       return NextResponse.redirect(`${origin}${next}`);
     }
   }
@@ -35,3 +40,4 @@ export async function GET(request: Request) {
   console.error('Authentication error:', 'Could not exchange code for session.');
   return NextResponse.redirect(`${origin}/login?error=Could not authenticate user`);
 }
+
