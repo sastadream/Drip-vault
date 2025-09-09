@@ -52,9 +52,9 @@ export async function uploadFile(formData: FormData) {
 
   if (dbError) {
     console.error('Database Error:', dbError);
-    // Attempt to clean up storage if DB insert fails
-    await supabase.storage.from('study200').remove([fullPath]);
-    return { error: 'Failed to save file metadata.' };
+    // The attempt to clean up storage on DB insert failure is removed
+    // because anonymous users do not have delete permissions.
+    return { error: `Failed to save file metadata: ${dbError.message}` };
   }
 
   revalidatePath(`/dashboard/${filePath}`);
