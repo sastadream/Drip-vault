@@ -44,7 +44,7 @@ export async function login(values: z.infer<typeof loginSchema>) {
     return { error: error.message };
   }
   revalidatePath('/', 'layout');
-  redirect('/dashboard');
+  return { error: null };
 }
 
 export async function logout() {
