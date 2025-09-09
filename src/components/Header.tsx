@@ -10,6 +10,9 @@ export async function Header() {
             <BookOpenCheck className="h-7 w-7 text-primary" />
             <span className="font-bold text-xl tracking-tight">EduVault</span>
           </Link>
+          <div className="hidden sm:block">
+            <p className="text-sm font-medium text-muted-foreground">Designed & Developed by Samir Desai</p>
+          </div>
         </div>
       </div>
     </header>
