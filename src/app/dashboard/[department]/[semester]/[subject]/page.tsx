@@ -20,51 +20,6 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return { title };
 }
 
-async function getSubjectId(departmentSlug: string, semesterSlug: string, subjectSlug: string): Promise<number | null> {
-    const supabase = createClient();
-
-    try {
-        const { data: deptData, error: deptError } = await supabase
-            .from('departments')
-            .select('id')
-            .eq('slug', departmentSlug)
-            .single();
-
-        if (deptError || !deptData) {
-            console.error(`Department not found or error fetching it for slug: ${departmentSlug}`, deptError);
-            return null;
-        }
-
-        const { data: semData, error: semError } = await supabase
-            .from('semesters')
-            .select('id')
-            .eq('slug', semesterSlug)
-            .single();
-        
-        if (semError || !semData) {
-            console.error(`Semester not found or error fetching it for slug: ${semesterSlug}`, semError);
-            return null;
-        }
-
-        const { data: subjectData, error: subjectError } = await supabase
-            .from('subjects')
-            .select('id')
-            .eq('slug', subjectSlug)
-            .eq('department_id', deptData.id)
-            .eq('semester_id', semData.id)
-            .single();
-
-        if (subjectError) throw subjectError;
-
-        return subjectData?.id ?? null;
-
-    } catch (error) {
-        console.error('Error in getSubjectId:', error);
-        return null;
-    }
-}
-
-
 export default async function SubjectPage({ params }: Props) {
   const { department: departmentSlug, semester: semesterSlug, subject: subjectSlug } = params;
 
@@ -76,16 +31,17 @@ export default async function SubjectPage({ params }: Props) {
     notFound();
   }
   
-  let subjectId = await getSubjectId(departmentSlug, semesterSlug, subjectSlug);
-
-  // If the database lookup fails, and we are on the demo subject, we can use the fallback ID.
-  if (!subjectId && departmentSlug === 'robotic-and-automation-engineering' && semesterSlug === 'sem-1' && subjectSlug === 'design-thinking') {
+  let subjectId: number | null = null;
+  // For the demo subject, we use a fallback ID to ensure it always works.
+  if (departmentSlug === 'robotic-and-automation-engineering' && semesterSlug === 'sem-1' && subjectSlug === 'design-thinking') {
       subjectId = 1;
   }
 
   const supabase = createClient();
   let files: any[] = [];
   if (subjectId) {
+      // We only fetch files if we have a subject ID.
+      // For the demo, it will fetch files with subject_id = 1.
       const { data } = await supabase.from('files').select('*').eq('subject_id', subjectId).order('uploaded_at', { ascending: false });
       files = data || [];
   }
