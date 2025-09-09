@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { useFormStatus } from 'react-dom';
 import { uploadFile } from '@/actions/files';
 import { Button } from './ui/button';
