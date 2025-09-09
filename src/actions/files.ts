@@ -32,19 +32,21 @@ export async function uploadFile(formData: FormData) {
 
   const fullPath = `${filePath}/${file.name}`;
   
-  const { data: existingFileData, error: listError } = await supabase.storage.from('study200').list(filePath, {
+  // Check if file already exists in storage
+  const { data: existingStorageFile, error: storageError } = await supabase.storage.from('study200').list(filePath, {
     search: file.name,
     limit: 1,
   });
 
-  if (listError) {
-      console.error('Error checking for existing file:', listError);
+  if (storageError) {
+    console.error('Error checking storage:', storageError);
+    return { error: 'Could not verify file in storage. Please try again.' };
   }
 
-  if (existingFileData && existingFileData.length > 0) {
-      return { error: 'A file with this name already exists. Please rename the file and try again.' };
+  if (existingStorageFile && existingStorageFile.length > 0) {
+      return { error: 'A file with this name already exists in storage. Please rename the file and try again.' };
   }
-
+  
   const { error: uploadError } = await supabase.storage.from('study200').upload(fullPath, file);
 
   if (uploadError) {
@@ -61,12 +63,13 @@ export async function uploadFile(formData: FormData) {
       subject_id: parseInt(subjectId, 10),
       file_url: publicUrl,
       file_name: file.name,
-      file_path: fullPath,
     });
 
   if (insertError) {
     console.error('Database Insert Error:', insertError);
-    return { error: `Failed to create file record: ${insertError.message}` };
+    // Attempt to clean up the uploaded file if the database insert fails
+    await supabase.storage.from('study200').remove([fullPath]);
+    return { error: `Failed to create database record: ${insertError.message}` };
   }
 
   revalidatePath(`/dashboard/${filePath}`);
