@@ -32,7 +32,7 @@ export async function uploadFile(formData: FormData) {
 
   const fullPath = `${filePath}/${file.name}`;
 
-  const { error: uploadError } = await supabase.storage.from('files').upload(fullPath, file);
+  const { error: uploadError } = await supabase.storage.from('study200').upload(fullPath, file);
 
   if (uploadError) {
     console.error('Upload Error:', uploadError);
@@ -41,7 +41,7 @@ export async function uploadFile(formData: FormData) {
 
   const {
     data: { publicUrl },
-  } = supabase.storage.from('files').getPublicUrl(fullPath);
+  } = supabase.storage.from('study200').getPublicUrl(fullPath);
 
   const { error: dbError } = await supabase.from('files').insert({
     subject_id: parseInt(subjectId),
@@ -53,7 +53,7 @@ export async function uploadFile(formData: FormData) {
   if (dbError) {
     console.error('Database Error:', dbError);
     // Attempt to clean up storage if DB insert fails
-    await supabase.storage.from('files').remove([fullPath]);
+    await supabase.storage.from('study200').remove([fullPath]);
     return { error: 'Failed to save file metadata.' };
   }
 
@@ -65,7 +65,7 @@ export async function deleteFile(fileId: number, filePath: string, pagePath: str
     const supabase = createClient();
     
     // Delete from storage
-    const { error: storageError } = await supabase.storage.from('files').remove([filePath]);
+    const { error: storageError } = await supabase.storage.from('study200').remove([filePath]);
     if (storageError) {
         console.error('Storage Deletion Error:', storageError);
         return { error: 'Failed to delete file from storage.' };
