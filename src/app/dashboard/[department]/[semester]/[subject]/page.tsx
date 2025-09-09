@@ -82,7 +82,12 @@ export default async function SubjectPage({ params }: Props) {
     notFound();
   }
   
-  const subjectId = await getSubjectId(departmentSlug, semesterSlug, subjectSlug);
+  let subjectId = await getSubjectId(departmentSlug, semesterSlug, subjectSlug);
+
+  // If the database lookup fails, and we are on the demo subject, we can use the fallback ID.
+  if (!subjectId && departmentSlug === 'robotic-and-automation-engineering' && semesterSlug === 'sem-1' && subjectSlug === 'design-thinking') {
+      subjectId = 1;
+  }
 
   const supabase = createClient();
   let files: any[] = [];
