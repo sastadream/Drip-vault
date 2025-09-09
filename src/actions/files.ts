@@ -32,8 +32,6 @@ export async function uploadFile(formData: FormData) {
 
   const fullPath = `${filePath}/${file.name}`;
   
-  console.log('Starting file upload process for:', fullPath);
-
   const { data: existingFileData, error: listError } = await supabase.storage.from('study200').list(filePath, {
     search: file.name,
     limit: 1,
@@ -44,58 +42,32 @@ export async function uploadFile(formData: FormData) {
   }
 
   if (existingFileData && existingFileData.length > 0) {
-      console.log('File already exists at path:', fullPath);
       return { error: 'A file with this name already exists. Please rename the file and try again.' };
   }
 
   const { error: uploadError } = await supabase.storage.from('study200').upload(fullPath, file);
 
   if (uploadError) {
-    console.error('Storage Upload Error:', uploadError);
     return { error: `Failed to upload file to storage: ${uploadError.message}` };
   }
   
-  console.log('File successfully uploaded to storage.');
-
   const {
     data: { publicUrl },
   } = supabase.storage.from('study200').getPublicUrl(fullPath);
   
-  console.log('Got public URL:', publicUrl);
-  
-  // The error was here: parseInt(subjectId) was incorrect.
-  // The subjectId is already a number passed as a string, but the database expects an integer.
-  // The correct way is to convert it to a number.
-  const { data: newFileData, error: initialInsertError } = await supabase
+  const { error: insertError } = await supabase
     .from('files')
-    .insert({ subject_id: Number(subjectId) })
-    .select('id')
-    .single();
-
-  if (initialInsertError || !newFileData) {
-    console.error('Database Initial Insert Error:', initialInsertError);
-    return { error: `Failed to create initial file record: ${initialInsertError?.message}` };
-  }
-
-  const newFileId = newFileData.id;
-  console.log('Successfully created initial record with ID:', newFileId);
-  
-  console.log('Attempting to update record with file metadata.');
-  const { error: updateError } = await supabase
-    .from('files')
-    .update({
+    .insert({
+      subject_id: parseInt(subjectId, 10),
       file_url: publicUrl,
       file_name: file.name,
       file_path: fullPath,
-    })
-    .eq('id', newFileId);
+    });
 
-  if (updateError) {
-    console.error('Database Update Error:', updateError);
-    return { error: `Failed to update file metadata: ${updateError.message}` };
+  if (insertError) {
+    console.error('Database Insert Error:', insertError);
+    return { error: `Failed to create file record: ${insertError.message}` };
   }
-
-  console.log('Successfully updated file metadata in database.');
 
   revalidatePath(`/dashboard/${filePath}`);
   return { error: null };

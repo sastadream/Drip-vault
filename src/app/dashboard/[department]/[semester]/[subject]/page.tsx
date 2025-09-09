@@ -31,17 +31,12 @@ export default async function SubjectPage({ params }: Props) {
     notFound();
   }
   
-  let subjectId: number | null = null;
   // For the demo subject, we use a fallback ID to ensure it always works.
-  if (departmentSlug === 'robotic-and-automation-engineering' && semesterSlug === 'sem-1' && subjectSlug === 'design-thinking') {
-      subjectId = 1;
-  }
+  const subjectId = (departmentSlug === 'robotic-and-automation-engineering' && semesterSlug === 'sem-1' && subjectSlug === 'design-thinking') ? 1 : null;
 
   const supabase = createClient();
   let files: any[] = [];
   if (subjectId) {
-      // We only fetch files if we have a subject ID.
-      // For the demo, it will fetch files with subject_id = 1.
       const { data } = await supabase.from('files').select('*').eq('subject_id', subjectId).order('uploaded_at', { ascending: false });
       files = data || [];
   }
