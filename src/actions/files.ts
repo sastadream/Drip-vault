@@ -14,14 +14,7 @@ const ALLOWED_FILE_TYPES = [
 
 export async function uploadFile(formData: FormData) {
   const supabase = createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) {
-    return { error: 'You must be logged in to upload files.' };
-  }
-
+  
   const file = formData.get('file') as File;
   const subjectId = formData.get('subjectId') as string;
   const filePath = formData.get('filePath') as string;
@@ -52,7 +45,6 @@ export async function uploadFile(formData: FormData) {
 
   const { error: dbError } = await supabase.from('files').insert({
     subject_id: parseInt(subjectId),
-    user_id: user.id,
     file_url: publicUrl,
     file_name: file.name,
     file_path: fullPath,
@@ -71,26 +63,6 @@ export async function uploadFile(formData: FormData) {
 
 export async function deleteFile(fileId: number, filePath: string, pagePath: string) {
     const supabase = createClient();
-    const { data: { user } } = await supabase.auth.getUser();
-
-    if (!user) {
-        return { error: 'Authentication required.' };
-    }
-
-    // First, check if the user is the owner of the file
-    const { data: fileData, error: fetchError } = await supabase
-        .from('files')
-        .select('user_id')
-        .eq('id', fileId)
-        .single();
-
-    if (fetchError || !fileData) {
-        return { error: 'File not found.' };
-    }
-
-    if (fileData.user_id !== user.id) {
-        return { error: 'You do not have permission to delete this file.' };
-    }
     
     // Delete from storage
     const { error: storageError } = await supabase.storage.from('files').remove([filePath]);
