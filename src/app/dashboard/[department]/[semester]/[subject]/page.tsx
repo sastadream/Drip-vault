@@ -22,30 +22,44 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 async function getSubjectId(departmentSlug: string, semesterSlug: string, subjectSlug: string): Promise<number | null> {
     const supabase = createClient();
-    
-    // This assumes you have tables: 'departments', 'semesters', 'subjects'
-    // with 'slug' columns to identify them.
-    const { data: subjectData, error } = await supabase
-        .from('subjects')
-        .select('id, semesters(slug), departments(slug)')
-        .eq('slug', subjectSlug)
-        .single();
-    
-    if (error || !subjectData) {
+
+    try {
+        const { data: deptData, error: deptError } = await supabase
+            .from('departments')
+            .select('id')
+            .eq('slug', departmentSlug)
+            .single();
+
+        if (deptError) throw deptError;
+
+        const { data: semData, error: semError } = await supabase
+            .from('semesters')
+            .select('id')
+            .eq('slug', semesterSlug)
+            .single();
+
+        if (semError) throw semError;
+
+        const { data: subjectData, error: subjectError } = await supabase
+            .from('subjects')
+            .select('id')
+            .eq('slug', subjectSlug)
+            .eq('department_id', deptData.id)
+            .eq('semester_id', semData.id)
+            .single();
+
+        if (subjectError) throw subjectError;
+
+        return subjectData.id;
+
+    } catch (error) {
         console.error('Error fetching subject ID:', error);
-        // Fallback for demo data
+        // Fallback for demo data if DB query fails during development
         if (departmentSlug === 'robotic-and-automation-engineering' && semesterSlug === 'sem-1' && subjectSlug === 'design-thinking') {
             return 1;
         }
         return null;
     }
-    
-    // This check is very basic. You might need a more robust way to link subjects to deps/semesters
-    if (subjectData.semesters && (subjectData.semesters as any).slug === semesterSlug && subjectData.departments && (subjectData.departments as any).slug === departmentSlug) {
-      return (subjectData as any).id;
-    }
-
-    return null;
 }
 
 
@@ -92,7 +106,7 @@ export default async function SubjectPage({ params }: Props) {
                     {subjectId ? (
                         <FileList files={files} />
                     ) : (
-                        <p className="text-muted-foreground">This subject is not configured for file uploads yet. Ensure database is set up.</p>
+                        <p className="text-muted-foreground">This subject is not configured for file uploads yet. Ensure database is set up correctly with departments, semesters, and subjects.</p>
                     )}
                 </CardContent>
             </Card>
