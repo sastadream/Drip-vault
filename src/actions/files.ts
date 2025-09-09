@@ -36,7 +36,7 @@ export async function uploadFile(formData: FormData) {
 
   if (uploadError) {
     console.error('Upload Error:', uploadError);
-    return { error: 'Failed to upload file to storage.' };
+    return { error: `Failed to upload file to storage: ${uploadError.message}` };
   }
 
   const {
