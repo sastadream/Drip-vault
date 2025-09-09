@@ -45,6 +45,16 @@ function SubmitButton() {
   );
 }
 
+// Simple mapping for demo purposes. In a real app, this would come from the database.
+const subjectSlugToId: { [key: string]: string } = {
+  'bme': '2',
+  'bee': '3',
+  'maths-1': '4',
+  'ipdc': '5',
+  'design-thinking': '1',
+};
+
+
 export function DashboardFileUploader() {
   const [department, setDepartment] = useState('');
   const [semester, setSemester] = useState('');
@@ -106,13 +116,15 @@ export function DashboardFileUploader() {
         return;
     }
 
-    const subjectId = (department === 'robotic-and-automation-engineering' && semester === 'sem-1' && subject === 'design-thinking') ? '1' : null;
+    const subjectId = (department === 'robotic-and-automation-engineering' && semester === 'sem-1') 
+      ? subjectSlugToId[subject] || null
+      : null;
     
     if (!subjectId) {
         toast({
             variant: 'destructive',
             title: 'Upload Not Configured',
-            description: 'This subject is not configured for uploads. Please select "Design Thinking" for demo.',
+            description: 'This subject combination is not configured for uploads. Please select a subject from Robotic & Automation, Sem 1.',
         });
         return;
     }

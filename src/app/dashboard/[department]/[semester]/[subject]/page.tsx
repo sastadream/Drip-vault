@@ -20,6 +20,15 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return { title };
 }
 
+// Simple mapping for demo purposes. In a real app, this would come from the database.
+const subjectSlugToId: { [key: string]: number } = {
+  'bme': 2,
+  'bee': 3,
+  'maths-1': 4,
+  'ipdc': 5,
+  'design-thinking': 1,
+};
+
 export default async function SubjectPage({ params }: Props) {
   const { department: departmentSlug, semester: semesterSlug, subject: subjectSlug } = params;
 
@@ -31,8 +40,10 @@ export default async function SubjectPage({ params }: Props) {
     notFound();
   }
   
-  // For the demo subject, we use a fallback ID to ensure it always works.
-  const subjectId = (departmentSlug === 'robotic-and-automation-engineering' && semesterSlug === 'sem-1' && subjectSlug === 'design-thinking') ? 1 : null;
+  // For the demo department/semester, assign an ID based on the subject slug.
+  const subjectId = (departmentSlug === 'robotic-and-automation-engineering' && semesterSlug === 'sem-1') 
+    ? subjectSlugToId[subjectSlug] || null
+    : null;
 
   const supabase = createClient();
   let files: any[] = [];
