@@ -6,16 +6,7 @@ export function Footer() {
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center text-sm text-muted-foreground">
           <p>
-            Made with ❤️ by{' '}
-            <a
-              href="https://github.com/sastadream"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="font-semibold text-primary hover:underline"
-            >
-              sastadream
-            </a>{' '}
-            (Samir Desai)
+            Made with Aura 🔥 by samir desai
           </p>
         </div>
       </div>
