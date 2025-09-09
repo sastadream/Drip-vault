@@ -34,7 +34,6 @@ export async function uploadFile(formData: FormData) {
   
   console.log('Starting file upload process for:', fullPath);
 
-  // Check if file already exists
   const { data: existingFileData, error: listError } = await supabase.storage.from('study200').list(filePath, {
     search: file.name,
     limit: 1,
@@ -42,7 +41,6 @@ export async function uploadFile(formData: FormData) {
 
   if (listError) {
       console.error('Error checking for existing file:', listError);
-      // We don't return here, as it might be a permissions issue that doesn't prevent an upload.
   }
 
   if (existingFileData && existingFileData.length > 0) {
@@ -64,27 +62,42 @@ export async function uploadFile(formData: FormData) {
   } = supabase.storage.from('study200').getPublicUrl(fullPath);
   
   console.log('Got public URL:', publicUrl);
-  console.log('Attempting to insert into database with payload:', {
-      subject_id: parseInt(subjectId),
+  
+  // Step 1: Insert a new record with just the subject_id to get a new ID.
+  console.log('Attempting to insert initial record with subject_id:', subjectId);
+  const { data: newFileData, error: initialInsertError } = await supabase
+    .from('files')
+    .insert({ subject_id: parseInt(subjectId) })
+    .select('id')
+    .single();
+
+  if (initialInsertError || !newFileData) {
+    console.error('Database Initial Insert Error:', initialInsertError);
+    // Note: We are not deleting the file from storage to avoid permissions issues.
+    return { error: `Failed to create initial file record: ${initialInsertError?.message}` };
+  }
+
+  const newFileId = newFileData.id;
+  console.log('Successfully created initial record with ID:', newFileId);
+  
+  // Step 2: Update the record with the rest of the file information.
+  console.log('Attempting to update record with file metadata.');
+  const { error: updateError } = await supabase
+    .from('files')
+    .update({
       file_url: publicUrl,
       file_name: file.name,
       file_path: fullPath,
-  });
+    })
+    .eq('id', newFileId);
 
-  // By selecting data, we force Supabase to re-evaluate the schema for the 'files' table.
-  const { error: dbError } = await supabase.from('files').insert({
-    subject_id: parseInt(subjectId),
-    file_url: publicUrl,
-    file_name: file.name,
-    file_path: fullPath,
-  }).select('id').single();
-
-  if (dbError) {
-    console.error('Database Insert Error:', dbError);
-    return { error: `Failed to save file metadata: ${dbError.message}` };
+  if (updateError) {
+    console.error('Database Update Error:', updateError);
+    // Note: We are not deleting the file from storage to avoid permissions issues.
+    return { error: `Failed to update file metadata: ${updateError.message}` };
   }
-  
-  console.log('Successfully inserted file metadata into database.');
+
+  console.log('Successfully updated file metadata in database.');
 
   revalidatePath(`/dashboard/${filePath}`);
   return { error: null };
