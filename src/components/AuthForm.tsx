@@ -67,9 +67,11 @@ export function AuthForm({ mode }: AuthFormProps) {
         title: isLogin ? 'Login Successful' : 'Signup Successful',
         description: isLogin ? 'Welcome back!' : 'Please check your email to verify your account.',
       });
-      // The middleware will handle redirection after successful auth state change.
-      // We just need to refresh the page to trigger middleware.
-      router.refresh();
+      if (isLogin) {
+        router.push('/dashboard');
+      } else {
+        router.refresh();
+      }
     }
   }
 
