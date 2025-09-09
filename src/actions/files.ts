@@ -60,24 +60,3 @@ export async function uploadFile(formData: FormData) {
   revalidatePath(`/dashboard/${filePath}`);
   return { error: null };
 }
-
-export async function deleteFile(fileId: number, filePath: string, pagePath: string) {
-    const supabase = createClient();
-    
-    // Delete from storage
-    const { error: storageError } = await supabase.storage.from('study200').remove([filePath]);
-    if (storageError) {
-        console.error('Storage Deletion Error:', storageError);
-        return { error: 'Failed to delete file from storage.' };
-    }
-    
-    // Delete from database
-    const { error: dbError } = await supabase.from('files').delete().eq('id', fileId);
-    if (dbError) {
-        console.error('DB Deletion Error:', dbError);
-        return { error: 'Failed to delete file record.' };
-    }
-    
-    revalidatePath(pagePath);
-    return { error: null };
-}
