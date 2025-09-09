@@ -30,9 +30,8 @@ async function getSubjectId(departmentSlug: string, semesterSlug: string, subjec
             .eq('slug', departmentSlug)
             .single();
 
-        if (deptError) throw deptError;
-        if (!deptData) {
-            console.error(`Department not found for slug: ${departmentSlug}`);
+        if (deptError || !deptData) {
+            console.error(`Department not found or error fetching it for slug: ${departmentSlug}`, deptError);
             return null;
         }
 
@@ -41,10 +40,9 @@ async function getSubjectId(departmentSlug: string, semesterSlug: string, subjec
             .select('id')
             .eq('slug', semesterSlug)
             .single();
-
-        if (semError) throw semError;
-        if (!semData) {
-            console.error(`Semester not found for slug: ${semesterSlug}`);
+        
+        if (semError || !semData) {
+            console.error(`Semester not found or error fetching it for slug: ${semesterSlug}`, semError);
             return null;
         }
 
@@ -61,11 +59,7 @@ async function getSubjectId(departmentSlug: string, semesterSlug: string, subjec
         return subjectData?.id ?? null;
 
     } catch (error) {
-        console.error('Error fetching subject ID:', error);
-        // Fallback for demo data if DB query fails during development
-        if (departmentSlug === 'robotic-and-automation-engineering' && semesterSlug === 'sem-1' && subjectSlug === 'design-thinking') {
-            return 1;
-        }
+        console.error('Error in getSubjectId:', error);
         return null;
     }
 }
