@@ -20,13 +20,18 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return { title };
 }
 
-// Simple mapping for demo purposes. In a real app, this would come from the database.
+// In a real app, this would come from a database.
+// Using unique slugs for each subject ensures no collisions.
 const subjectSlugToId: { [key: string]: number } = {
-  'design-thinking': 1,
-  'bme': 2,
-  'bee': 3,
-  'maths-1': 4,
-  'ipdc': 5,
+  // Robotics & Automation Eng - Sem 1
+  'bme-rae': 1,
+  'bee-rae': 2,
+  'maths-1-rae': 3,
+  'ipdc-rae': 4,
+  'design-thinking-rae': 5,
+  // Civil Eng - Sem 1
+  'design-thinking-ce': 6,
+  'maths-1-ce': 7,
 };
 
 export default async function SubjectPage({ params }: Props) {
@@ -40,12 +45,7 @@ export default async function SubjectPage({ params }: Props) {
     notFound();
   }
   
-  // For demo departments/semesters with upload enabled, assign an ID based on the subject slug.
-  const isUploadEnabledDepartment = 
-    (departmentSlug === 'robotic-and-automation-engineering' && semesterSlug === 'sem-1') ||
-    (departmentSlug === 'civil-engineering' && semesterSlug === 'sem-1');
-
-  const subjectId = isUploadEnabledDepartment ? subjectSlugToId[subjectSlug] || null : null;
+  const subjectId = subjectSlugToId[subjectSlug] || null;
 
   const supabase = createClient();
   let files: any[] = [];

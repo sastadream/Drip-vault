@@ -19,17 +19,17 @@ export const SEMESTERS = Array.from({ length: 8 }, (_, i) => ({
 export const SUBJECTS: Record<string, Record<string, { name: string; slug: string }[]>> = {
   'robotic-and-automation-engineering': {
     'sem-1': [
-      { name: 'BME', slug: 'bme' },
-      { name: 'BEE', slug: 'bee' },
-      { name: 'MATHS-1', slug: 'maths-1' },
-      { name: 'IPDC', slug: 'ipdc' },
-      { name: 'DESIGN THINKING', slug: 'design-thinking' },
+      { name: 'BME', slug: 'bme-rae' },
+      { name: 'BEE', slug: 'bee-rae' },
+      { name: 'MATHS-1', slug: 'maths-1-rae' },
+      { name: 'IPDC', slug: 'ipdc-rae' },
+      { name: 'DESIGN THINKING', slug: 'design-thinking-rae' },
     ],
   },
   'civil-engineering': {
     'sem-1': [
-        { name: 'DESIGN THINKING', slug: 'design-thinking' },
-        { name: 'MATHS-1', slug: 'maths-1' },
+        { name: 'DESIGN THINKING', slug: 'design-thinking-ce' },
+        { name: 'MATHS-1', slug: 'maths-1-ce' },
     ],
   },
 };
