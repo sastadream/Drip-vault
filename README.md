@@ -1,4 +1,4 @@
-git add . && git commit -m "Sync latest project updates" && git push origin main
+git remote set-url origin https://github.com/sastadream/Drip-vault.git && git add . && git commit -m "Rebrand to DripVault and sync project" && git push -u origin main --force
 # Firebase Studio
 
 This is a NextJS starter in Firebase Studio.
