@@ -26,4 +26,10 @@ export const SUBJECTS: Record<string, Record<string, { name: string; slug: strin
       { name: 'DESIGN THINKING', slug: 'design-thinking' },
     ],
   },
+  'civil-engineering': {
+    'sem-1': [
+        { name: 'DESIGN THINKING', slug: 'design-thinking' },
+        { name: 'MATHS-1', slug: 'maths-1' },
+    ],
+  },
 };

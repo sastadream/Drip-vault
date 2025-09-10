@@ -22,11 +22,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 // Simple mapping for demo purposes. In a real app, this would come from the database.
 const subjectSlugToId: { [key: string]: number } = {
+  'design-thinking': 1,
   'bme': 2,
   'bee': 3,
   'maths-1': 4,
   'ipdc': 5,
-  'design-thinking': 1,
 };
 
 export default async function SubjectPage({ params }: Props) {
@@ -40,10 +40,12 @@ export default async function SubjectPage({ params }: Props) {
     notFound();
   }
   
-  // For the demo department/semester, assign an ID based on the subject slug.
-  const subjectId = (departmentSlug === 'robotic-and-automation-engineering' && semesterSlug === 'sem-1') 
-    ? subjectSlugToId[subjectSlug] || null
-    : null;
+  // For demo departments/semesters with upload enabled, assign an ID based on the subject slug.
+  const isUploadEnabledDepartment = 
+    (departmentSlug === 'robotic-and-automation-engineering' && semesterSlug === 'sem-1') ||
+    (departmentSlug === 'civil-engineering' && semesterSlug === 'sem-1');
+
+  const subjectId = isUploadEnabledDepartment ? subjectSlugToId[subjectSlug] || null : null;
 
   const supabase = createClient();
   let files: any[] = [];
