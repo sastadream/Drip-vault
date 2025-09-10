@@ -9,7 +9,7 @@ export async function Header() {
           <div className="flex items-center gap-4">
             <Link href="/dashboard" className="flex items-center gap-2.5">
               <BookOpenCheck className="h-7 w-7 text-primary" />
-              <span className="font-bold text-xl tracking-tight">RizzVault</span>
+              <span className="font-bold text-xl tracking-tight">DripVault</span>
             </Link>
             <div className="border-l pl-4">
                 <p className="text-sm font-semibold text-foreground/90">
