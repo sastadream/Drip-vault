@@ -1,4 +1,4 @@
-git push -u origin main
+git add . && git commit -m "Sync latest project updates" && git push origin main
 # Firebase Studio
 
 This is a NextJS starter in Firebase Studio.
