@@ -22,11 +22,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 // Simple mapping for demo purposes. In a real app, this would come from the database.
 const subjectSlugToId: { [key: string]: number } = {
+  'design-thinking': 1,
   'bme': 2,
   'bee': 3,
   'maths-1': 4,
   'ipdc': 5,
-  'design-thinking': 1,
 };
 
 export default async function SubjectPage({ params }: Props) {
